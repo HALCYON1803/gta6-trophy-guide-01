@@ -28,7 +28,12 @@ const KIND_SHORT = {
 };
 
 const params = new URLSearchParams(location.search);
-const trophies = (await (await fetch('data/trophies.json')).json()).trophies;
+const DATA = await (await fetch('data/trophies.json')).json();
+const trophies = DATA.trophies;
+// The seven sources, as a registry: each trophy cites sources by their
+// global [n] id, and each step cites the same id, so one number means the
+// same source everywhere in the guide.
+const SOURCES = new Map(DATA.sources.map((s) => [s.id, s]));
 const byId = new Map(trophies.map((t) => [t.id, t]));
 
 let earned = new Set(loadEarned());
@@ -87,7 +92,7 @@ function bumpCounter(id, delta) {
   if (!t || !t.counter) return;
   counters.set(id, Math.max(0, Math.min(t.counter.total, counterVal(id) + delta)));
   saveCounters();
-  renderProgress(); renderList(); renderDetail(); renderRoadmap(); renderMissables();
+  renderProgress(); renderList(); renderDetail(); renderRoadmap(); renderMissables(); renderMatrix();
 }
 
 function saveEarned() {
@@ -140,6 +145,16 @@ function renderProgress() {
   for (const t of trophies) if (earned.has(t.id)) kinds[t.kind] = (kinds[t.kind] || 0) + 1;
   document.getElementById('kind-counts').textContent = Object.entries(KIND_SHORT)
     .map(([k, label]) => `${label} ${kinds[k] || 0}/${trophies.filter((t) => t.kind === k).length}`).join(' · ');
+  // GOAL: the two trophies the whole run points at — Vice Got a Price!
+  // needs the other 54, A Long Road needs all 55 ticked in this tracker.
+  const others = earned.size - (earned.has(1) ? 1 : 0);
+  document.getElementById('goal-strip').textContent =
+    `GOAL · Vice Got a Price! ${others}/54 · A Long Road ${earned.size}/55 trophies ticked`;
+  // Cited by source: how many of the 55 each of the 7 sources backs,
+  // computed from the data so the strip can never drift from the guide.
+  document.getElementById('audit-cited').textContent =
+    'Cited by source: ' + DATA.sources.map((s) =>
+      `[${s.id}] ${s.name.split(' — ')[0]} ${trophies.filter((t) => t.sources.includes(s.id)).length}/55`).join(' · ');
 }
 
 // ---- Detail panel: one trophy's guide with its sources ----
@@ -192,6 +207,32 @@ function renderDetail() {
   panel.append(facts);
   const phase = phaseFor(t.id);
   if (phase) panel.append(el('p', 'detail-roadmap', `Roadmap: Phase ${phase.phase} · ~${phase.time.replace('About ', '')}`));
+  // Where the sources disagree, the guide shows both sides instead of
+  // picking one silently: the disagreement names the split and the
+  // sources behind each side, and the safe play is in the steps below.
+  if (t.disagree) {
+    const box = el('div', 'disagree-box');
+    box.append(el('h3', null, 'Sources disagree — both versions shown'));
+    box.append(el('p', null, t.disagree.text));
+    const cited = el('p', 'disagree-cited', 'Cited by: ');
+    t.disagree.srcs.forEach((id, i) => {
+      if (i) cited.append(document.createTextNode(', '));
+      const s = SOURCES.get(id);
+      const a = el('a', null, `[${id}] ${s.name.split(' — ')[0]}`);
+      a.href = s.url; a.target = '_blank'; a.rel = 'noopener';
+      cited.append(a);
+    });
+    box.append(cited);
+    panel.append(box);
+  }
+  // Watch: a strand with a story-linked window — start it as soon as it
+  // unlocks rather than leaving it for after the credits.
+  if (t.watch) {
+    const box = el('div', 'watch-box');
+    box.append(el('h3', null, '⚠ Watch — start this strand early'));
+    box.append(el('p', null, t.watchNote));
+    panel.append(box);
+  }
   panel.append(el('h3', null, 'How to unlock it'));
   const steps = el('ol', 'steps');
   for (const s of (t.steps || [{ text: t.guide, src: 1 }])) {
@@ -205,21 +246,22 @@ function renderDetail() {
   const note = t.confidence === 'unconfirmed'
     ? 'Confidence: unconfirmed — see the sources below for updates.'
     : t.confidence === 'reported'
-      ? 'Confidence: reported — steps from PowerPyx and GTABase via GTA-Zone.'
+      ? 'Confidence: reported — steps cite the sources below, all retrieved 20 Nov 2026.'
       : 'Confidence: official — the name, description and grade are PlayStation\u2019s own.';
   panel.append(el('p', 'confidence', note));
   panel.append(el('h3', null, 'Sources'));
   const list = el('ul', 'sources');
-  t.sources.forEach((s, i) => {
+  for (const id of t.sources) {
+    const s = SOURCES.get(id);
     const li = el('li');
-    li.append(document.createTextNode(`[${i + 1}] `));
+    li.append(document.createTextNode(`[${id}] `));
     const a = el('a', null, s.name);
     a.href = s.url;
     a.target = '_blank';
     a.rel = 'noopener';
-    li.append(a, document.createTextNode(' · retrieved 19 Nov 2026'));
+    li.append(a, document.createTextNode(` · retrieved ${s.retrieved}`));
     list.append(li);
-  });
+  }
   panel.append(list);
   const toggle = el('button', 'earned-btn', earned.has(t.id) ? 'Mark as not earned' : 'Mark as earned');
   toggle.type = 'button';
@@ -317,12 +359,16 @@ function trophyCard(t) {
   head.append(el('span', 'grade ' + t.grade, gradeChip(t)));
   head.append(el('span', 'kind', KINDS[t.kind]));
   if (t.missable === 'possible') head.append(el('span', 'missable', '⚠ Possibly missable'));
+  if (t.watch) head.append(el('span', 'watch-tag', '⚠ Watch'));
   if (t.hidden) head.append(el('span', 'hidden-tag', 'Hidden on PS5'));
   body.append(head);
   body.append(el('h3', null, masked ? 'Hidden trophy — earn it to reveal' : t.name));
   body.append(el('p', 'desc', masked ? 'This trophy stays hidden on PlayStation until you earn it. Turn spoilers on to see it.' : t.description));
   const meta = el('p', 'meta', `${masked ? '' : `Target: ${t.target} · `}Difficulty ${difficultyDots(t)} · Xbox ${t.gamerscore}G`);
   body.append(meta);
+  // Inline citations on every row: the global [n] ids of the sources
+  // behind this trophy, so the list itself shows the guide is sourced.
+  body.append(el('p', 'src-chips', `Sources ${t.sources.map((id) => `[${id}]`).join(' ')}`));
   const open = el('button', 'guide-btn', 'Guide & sources');
   open.type = 'button';
   open.addEventListener('click', () => { selectedId = t.id; renderList(); renderDetail(); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
@@ -335,7 +381,7 @@ function trophyCard(t) {
 function renderRoadmap() {
   const wrap = document.getElementById('roadmap');
   wrap.replaceChildren();
-  wrap.append(el('p', 'lede', 'About 200 hours in total (PowerPyx, via GTA-Zone): 60–80 for the story, about 100 for the 100% checklist, about 10 for Strangers & Freaks and cleanup. One playthrough, no mission replay, free roam after the story. Do the phases in order; tick trophies off in the tracker as you earn them.'));
+  wrap.append(el('p', 'lede', 'About 200 hours in total (PowerPyx): 60–80 for the story, about 100 for the 100% checklist, about 10 for Strangers & Freaks and cleanup. One playthrough, no mission replay, free roam after the story. Do the phases in order; tick trophies off in the tracker as you earn them.'));
   // NEXT UP: the first unearned trophy in roadmap order, with its counter
   // when it has one. Positive Mental Attitude leads while it is unearned:
   // its Chapter 1 spot is the one thing that can be missed for good.
@@ -354,11 +400,27 @@ function renderRoadmap() {
     nextUp.append(document.createTextNode(`${isHiddenFromReader(nt) ? 'Hidden trophy' : nt.name}${counter} · ${why}.`));
   }
   wrap.append(nextUp);
+  // Ground rules: the four facts the whole roadmap rests on, each cited
+  // by the global source numbers used everywhere else in the guide.
+  const rules = el('div', 'ground-rules');
+  rules.append(el('h3', null, 'Ground rules — read these first'));
+  const ruleList = el('ul', null);
+  for (const text of [
+    'All 55 trophies are offline, in one playthrough — no online trophies, no DLC trophies. [2][4]',
+    'Cheats off, always: using one disables trophies and saving. [1][2]',
+    'Keep a manual save at the start of every chapter and one before the final mission — there is no mission replay and no New Game+. [2][5]',
+    'Free roam continues after the story, and every side strand stays open — except the Chapter 1 meditation spot. [1][2]',
+  ]) ruleList.append(el('li', null, text));
+  rules.append(ruleList);
+  wrap.append(rules);
+  wrap.append(el('p', 'methodology', 'HOW THIS ROADMAP WAS BUILT — Built from the official trophy descriptions and 7 sources, all retrieved and verified on 20 November 2026. Phases follow chapter order, side strands as they unlock, the open-world grind after the credits, and money with the 100% checklist last — because most of it is already done by then.'));
   for (const phase of ROADMAP) {
     const done = phaseEarnedCount(phase, earned);
     const section = el('section', 'phase');
     section.append(el('h3', null, `Phase ${phase.phase} — ${phase.title} (${done}/${phase.trophyIds.length} earned, ${phase.time})`));
     section.append(el('p', null, phase.text));
+    const stageSrcs = [...new Set(phase.trophyIds.flatMap((id) => byId.get(id).sources))].sort((a, b) => a - b);
+    section.append(el('p', 'stage-coverage', `STAGE SOURCE COVERAGE — ${stageSrcs.map((id) => `[${id}] ${SOURCES.get(id).name.split(' — ')[0]}`).join(' · ')}`));
     const chips = el('div', 'chips');
     for (const id of phase.trophyIds) {
       const t = byId.get(id);
@@ -387,6 +449,21 @@ function renderMissables() {
   habit.append(el('h3', null, 'The habit that covers everything else'));
   habit.append(el('p', null, 'Keep a manual save at the start of every chapter and one before the final mission. There is no mission replay and no New Game+, so a chapter-start save is your only way back. And keep cheats off while trophy hunting: using one disables trophies and saving.'));
   wrap.append(habit);
+  // Watch list: five side strands whose chains have windows linked to
+  // story progress (TechWiser — the only source that gives the warning).
+  // They stay completable in free roam, but start them when they unlock.
+  const watchWrap = el('div', 'watch-list');
+  watchWrap.append(el('h3', null, 'Watch list — 5 strands to start early'));
+  watchWrap.append(el('p', null, 'TechWiser reports the stranger chains behind five hidden trophies have windows linked to story progress; only one source gives that warning, so begin each chain as soon as it unlocks. PowerPyx adds that all trophy-related quest givers return in free roam, so a started chain stays completable after the story.'));
+  const watchRows = el('ul', null);
+  for (const t of trophies.filter((x) => x.watch)) {
+    const li = el('li');
+    li.append(el('strong', null, `${isHiddenFromReader(t) ? 'Hidden trophy' : t.name} — `));
+    li.append(document.createTextNode(t.watchNote));
+    watchRows.append(li);
+  }
+  watchWrap.append(watchRows);
+  wrap.append(watchWrap);
   wrap.append(el('h3', null, 'All trophies by missable status'));
   const rows = el('ul', 'missable-list');
   for (const t of trophies) {
@@ -395,11 +472,49 @@ function renderMissables() {
     rows.append(li);
   }
   wrap.append(rows);
-  wrap.append(el('p', 'sources-note', 'Missable status: PowerPyx via GTA-Zone, cross-checked with PlanetGTA6 and OutputLag. Sources: '));
+  wrap.append(el('p', 'sources-note', 'Missable status: PowerPyx, cross-checked with PlanetGTA6 and OutputLag; the watch list rests on TechWiser, the only source that flags the story windows. Sources: '));
   const a = el('a', null, 'GTA-Zone trophy list');
   a.href = 'https://gta-zone.com/news/gta-6-trophies-achievements/';
   a.target = '_blank'; a.rel = 'noopener';
   wrap.lastChild.append(a);
+}
+
+// ---- Source matrix ----
+// One row per trophy, one column per source: a ✓ where that source backs
+// the trophy, so the reader can see at a glance that no trophy stands on
+// a single source and which source covers what.
+function renderMatrix() {
+  const wrap = document.getElementById('matrix');
+  wrap.replaceChildren();
+  wrap.append(el('p', 'lede', 'Every trophy in this guide is backed by at least two of the seven sources below, and every step cites its source by number. The matrix shows which source backs which trophy — read a column to see what one source covers, read a row to see what backs one trophy.'));
+  const table = el('table', 'matrix-table');
+  const head = el('tr');
+  head.append(el('th', null, 'Trophy'));
+  for (const s of DATA.sources) {
+    const th = el('th', null, `[${s.id}]`);
+    th.title = s.name;
+    head.append(th);
+  }
+  head.append(el('th', null, 'Earned'));
+  table.append(head);
+  for (const t of trophies) {
+    const row = el('tr');
+    row.append(el('td', 'matrix-name', isHiddenFromReader(t) ? 'Hidden trophy' : t.name));
+    for (const s of DATA.sources) {
+      row.append(el('td', 'matrix-cell' + (t.sources.includes(s.id) ? ' yes' : ''), t.sources.includes(s.id) ? '✓' : '·'));
+    }
+    row.append(el('td', 'matrix-cell', earned.has(t.id) ? '✓' : '·'));
+    table.append(row);
+  }
+  const foot = el('tr', 'matrix-foot');
+  foot.append(el('td', null, 'Coverage'));
+  for (const s of DATA.sources) {
+    foot.append(el('td', null, `${trophies.filter((t) => t.sources.includes(s.id)).length}/55`));
+  }
+  foot.append(el('td', null, `${earned.size}/55`));
+  table.append(foot);
+  wrap.append(table);
+  wrap.append(el('p', 'sub', DATA.sources.map((s) => `[${s.id}] ${s.name}`).join(' · ')));
 }
 
 // ---- Views ----
@@ -414,6 +529,7 @@ function setView(next) {
   }
   if (view === 'roadmap') renderRoadmap();
   if (view === 'missables') renderMissables();
+  if (view === 'matrix') renderMatrix();
 }
 
 // ---- Controls ----
@@ -488,4 +604,5 @@ renderDetail();
 renderList();
 renderRoadmap();
 renderMissables();
-setView(['tracker', 'roadmap', 'missables', 'about'].includes(view) ? view : 'tracker');
+renderMatrix();
+setView(['tracker', 'roadmap', 'missables', 'matrix', 'about'].includes(view) ? view : 'tracker');

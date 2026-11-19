@@ -1,6 +1,6 @@
 // The platinum roadmap: the order to earn the 55 trophies in, in five
 // phases. The order is built from the official descriptions and the
-// guide sources (PowerPyx and GTABase, via GTA-Zone): story first, in
+// guide sources (PowerPyx and GTABase, direct): story first, in
 // chapter order, with the missable meditation spot done in Chapter 1;
 // side strands as they unlock; the open-world grind after the credits;
 // money and the 100% checklist last, because most of it is already done
@@ -11,7 +11,7 @@ export const ROADMAP = [
     phase: 1,
     title: 'Before you start, and Chapters 1–2',
     time: 'About 25 hours',
-    text: 'Turn cheats off and keep them off: using one disables trophies and saving (PowerPyx, via GTA-Zone). Make a manual save at the start of every chapter, because there is no mission replay and no New Game+. In Chapter 1, do the first meditation spot offered at home: it is the only spot PowerPyx flags as possibly missable, and it is gone after the chapter. Play both chapters in order and try the activities as they unlock.',
+    text: 'Turn cheats off and keep them off: using one disables trophies and saving (PowerPyx). Make a manual save at the start of every chapter, because there is no mission replay and no New Game+. In Chapter 1, do the first meditation spot offered at home: it is the only spot PowerPyx flags as possibly missable, and it is gone after the chapter. Play both chapters in order and try the activities as they unlock.',
     trophyIds: [2, 3, 20, 28, 4, 8, 24, 29],
   },
   {

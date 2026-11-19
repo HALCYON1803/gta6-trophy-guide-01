@@ -219,3 +219,52 @@ a { color: var(--pink); }
   .trophy-list { grid-template-columns: 1fr 1fr; }
   body { background: #fff; }
 }
+
+/* ---- v4: goal strip, source matrix, disagreement and watch boxes ---- */
+
+/* Goal strip: the two trophies the run points at, in the progress box. */
+.progress .goal-strip { font-weight: 700; color: #ffd9a8; display: block; }
+/* Cited-by-source line: computed from the data, one line in the masthead. */
+#audit-cited { display: block; }
+
+/* Source matrix: one row per trophy, one column per source. */
+.matrix-table { border-collapse: collapse; width: 100%; font-size: 13px; background: var(--card); }
+.matrix-table th, .matrix-table td { border: 1px solid var(--line); padding: 4px 7px; text-align: center; }
+.matrix-table th { background: #f3e8ff; color: var(--purple); }
+.matrix-table td.matrix-name { text-align: left; font-weight: 600; white-space: nowrap; }
+.matrix-table td.matrix-cell.yes { color: var(--good); font-weight: 700; }
+.matrix-table tr.matrix-foot td { font-weight: 700; background: #f3e8ff; color: var(--purple); }
+
+/* Disagreement box: shown where the sources split, both versions named. */
+.disagree-box {
+  background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 8px;
+  padding: 6px 10px; font-size: 12.5px; margin: 0 0 7px;
+}
+.disagree-box h3 { margin: 0 0 3px; color: var(--purple); }
+.disagree-cited { font-size: 12px; margin: 4px 0 0; }
+
+/* Watch box and tag: strands with a story-linked window. */
+.watch-box {
+  background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px;
+  padding: 6px 10px; font-size: 12.5px; margin: 0 0 7px; color: #92400e;
+}
+.watch-box h3 { margin: 0 0 3px; color: #92400e; }
+.watch-tag { background: #fef3c7; color: #92400e; }
+
+/* Inline source chips on every trophy row. */
+.trophy .src-chips { margin: 0 0 6px; font-size: 12px; color: var(--muted); }
+.trophy .src-chips::before { content: ""; }
+
+/* Ground rules and methodology on the roadmap. */
+.ground-rules { background: #ecfdf5; border: 1px solid var(--teal); border-radius: 12px; padding: 13px 16px; margin: 12px 0; }
+.ground-rules h3 { margin-top: 0; color: var(--teal); }
+.ground-rules ul { margin: 0; padding-left: 20px; }
+.ground-rules li { margin-bottom: 4px; }
+.methodology { font-size: 13px; color: var(--muted); background: #f3e8ff; border-radius: 7px; padding: 6px 10px; }
+.stage-coverage { font-size: 12.5px; color: var(--purple); background: #f3e8ff; border-radius: 7px; padding: 4px 9px; }
+
+/* Watch list on the missables view. */
+.watch-list { background: #fffbeb; border: 1px solid #f59e0b; border-radius: 12px; padding: 13px 16px; margin: 12px 0; }
+.watch-list h3 { margin-top: 0; color: #92400e; }
+.watch-list ul { margin: 0; padding-left: 20px; }
+.watch-list li { margin-bottom: 6px; }

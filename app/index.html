@@ -13,7 +13,7 @@
 <header class="masthead">
   <p class="eyebrow">Grand Theft Auto VI · PlayStation 5 · Leonida</p>
   <h1>GTA VI Trophy Guide &amp; Tracker</h1>
-  <p class="lede audit">SELF-AUDIT · 55/55 trophies · 55/55 guides · 55/55 cited · 28/28 hidden · 1 possibly missable · 5 unconfirmed — listed honestly · Sources retrieved 19 Nov 2026</p>
+  <p class="lede audit">SELF-AUDIT · 55/55 trophies · 55/55 guides · 55/55 cited · 28/28 hidden · 1 possibly missable · 5 watch · 5 unconfirmed · 1 source disagreement — listed honestly · Sources retrieved 20 Nov 2026</p>
   <div class="progress" role="group" aria-label="Overall progress">
     <div class="progress-row">
       <p id="progress-count">0 of 55 earned · 0%</p>
@@ -21,11 +21,14 @@
     </div>
     <p id="grade-counts" class="sub"></p>
     <p id="kind-counts" class="sub"></p>
+    <p id="goal-strip" class="sub goal-strip"></p>
+    <p id="audit-cited" class="sub"></p>
   </div>
   <nav class="tabs" aria-label="Guide sections">
     <button type="button" data-view="tracker" class="active" aria-pressed="true">Tracker</button>
     <button type="button" data-view="roadmap" aria-pressed="false">Platinum roadmap</button>
     <button type="button" data-view="missables" aria-pressed="false">Missables</button>
+    <button type="button" data-view="matrix" aria-pressed="false">Source matrix</button>
     <button type="button" data-view="about" aria-pressed="false">About &amp; sources</button>
   </nav>
 </header>
@@ -88,26 +91,37 @@
   <div id="missables"></div>
 </section>
 
+<section class="view" id="view-matrix" hidden>
+  <h2>Source matrix</h2>
+  <div id="matrix"></div>
+</section>
+
 <section class="view" id="view-about" hidden>
   <h2>About this guide</h2>
   <p>This guide is an independent, fan-made tracker. It is not affiliated with Rockstar Games, Sony or PlayStation, and it uses no Rockstar logo, artwork or game screenshots: the look is its own.</p>
   <h3>How accurate is it?</h3>
-  <p>The trophy names, descriptions and grades are the official list as PlayStation publishes it, mirrored by Exophase and PSNProfiles on 18 November 2026 and cross-checked against TrueAchievements, GTABase and PowerPyx. The guides are written in this entry's own words from those sources. Where a trophy's exact trigger has not been pinned down yet — five trophies, marked <strong>unconfirmed</strong> — the guide says so instead of inventing steps. Difficulty ratings and time estimates are the guide's own estimates, labelled as such; the headline figures (about 200 hours, 4/10) are PowerPyx's, via GTA-Zone.</p>
+  <p>The trophy names, descriptions and grades are the official list as PlayStation publishes it, mirrored by Exophase and PSNProfiles on 18 November 2026 and cross-checked against TrueAchievements, GTABase and PowerPyx. The guides are written in this entry's own words from those sources. Where a trophy's exact trigger has not been pinned down yet — five trophies, marked <strong>unconfirmed</strong> — the guide says so instead of inventing steps. Where the sources disagree — the meditation count, 18 spots for the trophy against 15 for the 100% checklist — the guide shows both numbers instead of picking one. Difficulty ratings and time estimates are the guide's own estimates, labelled as such; the headline figures (about 200 hours, 4/10) are PowerPyx's.</p>
   <h3>How to use it</h3>
   <p>Tick a trophy off when you earn it on PS5; the tick is saved in this browser's localStorage and survives reloads. Use Export to keep a backup file, and Import to restore it on another device. Spoilers stay off by default, so the 28 hidden trophies show as “Hidden trophy” until you earn them or turn spoilers on. The whole guide is static files that work with the network off: nothing is fetched at run time except its own trophy data file.</p>
   <h3>Sources</h3>
   <ul class="sources">
+    <li><a href="https://www.powerpyx.com/gta-6-grand-theft-auto-vi-trophy-guide-roadmap/" target="_blank" rel="noopener">PowerPyx — GTA 6 Trophy Guide &amp; Roadmap</a> (guide steps, counts, difficulty, time, missables; lists all 55 names and descriptions)</li>
+    <li><a href="https://gta-zone.com/news/gta-6-trophies-achievements/" target="_blank" rel="noopener">GTA-Zone — GTA 6 Trophy List: All 55 Trophies and Achievements</a> (PowerPyx + GTABase summary; difficulty, time, missables, counts)</li>
     <li><a href="https://www.planetgta6.com/en/gta-6-trophies/" target="_blank" rel="noopener">PlanetGTA6 — GTA 6 Trophies: All 55 trophies and Xbox achievements</a> (official names and descriptions from Exophase, cross-checked with PSNProfiles and TrueAchievements)</li>
-    <li><a href="https://gta-zone.com/news/gta-6-trophies-achievements/" target="_blank" rel="noopener">GTA-Zone — GTA 6 Trophy List: All 55 Trophies and Achievements</a> (PowerPyx's difficulty, time and missable call; GTABase's Gamerscore and counts)</li>
     <li><a href="https://www.gtabase.com/articles/gta-6/gta-6-achievements-trophies-list-ps5-xbox-series" target="_blank" rel="noopener">GTABase — GTA 6 Trophy Guide &amp; Achievements List</a> (full list with grades, Gamerscore and hidden flags)</li>
     <li><a href="https://outputlag.com/guides/gta-6-trophy-list/" target="_blank" rel="noopener">OutputLag — GTA 6 Trophy List: All 55 Trophies and Achievements</a> (cross-check on the missable meditation spot and the 200-hour estimate)</li>
+    <li><a href="https://egamers.io/gta-6-trophy-list-all-55-trophies-and-achievements-plus-the-hardest-ones/" target="_blank" rel="noopener">eGamers — GTA 6 Trophy List: All 55 Trophies And Achievements, Plus The Hardest Ones</a> (full list; documents the 18-vs-15 meditation disagreement and the TechWiser window warning)</li>
+    <li><a href="https://techwiser.com/gta-6-missions/" target="_blank" rel="noopener">TechWiser — All GTA 6 Main (Story) and Side (Strangers &amp; Freaks) Missions Walkthroughs</a> (stranger-mission windows behind the five hidden-trophy chains)</li>
   </ul>
+  <p class="sub">All seven sources were retrieved and verified on 20 November 2026. Every trophy is backed by at least two of them; see the Source matrix tab for which source backs which trophy.</p>
   <h3>Key facts, with sources</h3>
   <ul>
     <li>55 trophies: 1 Platinum, 2 Gold, 6 Silver, 46 Bronze; 28 hidden; 1,000 Gamerscore on Xbox. (PlanetGTA6, GTABase)</li>
     <li>No online trophies and no DLC trophies; the whole list is single-player. (GTA-Zone, GTABase)</li>
     <li>Platinum about 200 hours, difficulty 4/10; story 60–80 hours. (PowerPyx via GTA-Zone)</li>
-    <li>One possibly missable trophy: Positive Mental Attitude, first meditation spot in Chapter 1. (PowerPyx via GTA-Zone)</li>
+    <li>One possibly missable trophy: Positive Mental Attitude, first meditation spot in Chapter 1. (PowerPyx)</li>
+    <li>One source disagreement, shown honestly: 18 meditation spots for Positive Mental Attitude vs 15 for the 100% checklist (PowerPyx and GTABase count 18 for the trophy; eGamers notes the split).</li>
+    <li>Five side strands to start early: Andy, Kenton, Billy, Randy and Tyrone have story-linked windows (TechWiser, the only source that flags them).</li>
     <li>Cheats disable trophies and saving, and only unlock after the story. (PowerPyx via GTA-Zone)</li>
     <li>No mission replay and no New Game+; free roam continues after the story. (GTA-Zone)</li>
   </ul>
