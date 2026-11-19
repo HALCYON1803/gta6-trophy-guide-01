@@ -5,6 +5,8 @@ descriptions and grades are PlayStation's own words as published; the guides
 are this entry's own words, written from these sources and cited per trophy
 in `app/data/trophies.json` (each trophy carries its own `sources` list).
 
+Retrieval: all four sources below were last retrieved and verified on 19 November 2026.
+
 ## The official list (names, descriptions, grades, hidden flags)
 
 - **Exophase / PSNProfiles / TrueAchievements, via PlanetGTA6** —
@@ -14,7 +16,7 @@ in `app/data/trophies.json` (each trophy carries its own `sources` list).
   PSNProfiles and TrueAchievements." This is the source for the 27 visible /
   28 hidden split, every name and grade, and every Xbox Gamerscore value
   (which sums to 1,000G). The kit's own dossier agrees: 55 trophies, 1
-  Platinum, 2 Gold, 6 Silver, 46 Bronze, 28 hidden.
+  Platinum, 2 Gold, 6 Silver, 46 Bronze, 28 hidden. Retrieved 19 November 2026.
 
 ## Guide steps, counts, difficulty, time, missables
 
@@ -39,15 +41,16 @@ in `app/data/trophies.json` (each trophy carries its own `sources` list).
   actions, Scooter Bros app from Moses in Chapter 2). The five trophies it
   lists as "unconfirmed" (In The Beginning…, Capital Offense, Bad Luck,
   I Guess, The Truth Is Out There, Ten Pin) are marked unconfirmed here too.
+  Retrieved 19 November 2026.
 - **GTABase trophy guide** —
   https://www.gtabase.com/articles/gta-6/gta-6-achievements-trophies-list-ps5-xbox-series
   Full list with grades, Gamerscore and hidden flags; cross-check for the
-  counts and the roadmap above.
+  counts and the roadmap above. Retrieved 19 November 2026.
 - **OutputLag trophy list** —
   https://outputlag.com/guides/gta-6-trophy-list/
   Cross-check on the 55 / 1-2-6-46 split, the 28 hidden trophies, the
   Chapter 1 meditation missable, no mission replay, ~200 hours, no online
-  trophies, and cheats disabling trophies.
+  trophies, and cheats disabling trophies. Retrieved 19 November 2026.
 
 ## What is NOT a source here
 
