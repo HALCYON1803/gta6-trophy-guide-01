@@ -512,9 +512,9 @@
       "kind": "collectible",
       "missable": "possible",
       "difficulty": 2,
-      "target": "18 meditation spots, 10 locations",
+      "target": "18 spots in 10 locations",
       "confidence": "reported",
-      "guide": "Meditate at every spot across Leonida: 18 spots in 10 locations, with Jason and Lucia. POSSIBLY MISSABLE, the only trophy PowerPyx flags this way: the first meditation spot is offered at home in Chapter 1 and becomes permanently unavailable after that chapter, and it is not yet confirmed whether the trophy needs it. Do it in Chapter 1 to be safe. The last spot needs Jason and Lucia playable together, which opens after Chapter 2. Note that 100% completion only asks for 15 of the 18 spots, so even the missable one cannot cost you A Long Road.",
+      "guide": "Meditate at every spot across Leonida: 18 spots in 10 locations, with Jason and Lucia. POSSIBLY MISSABLE, the only trophy PowerPyx flags this way: the first spot is offered at home in Chapter 1 and is gone for good after that chapter, and it is not yet confirmed whether the trophy needs it — do it in Chapter 1 to be safe. The last spot needs Jason and Lucia playable together, which opens after Chapter 2. 100% completion only asks for 15 of the 18 spots, so this trophy cannot cost you A Long Road.",
       "sources": [
         {"name": "GTA-Zone trophy list (PowerPyx + GTABase)", "url": "https://gta-zone.com/news/gta-6-trophies-achievements/"},
         {"name": "PlanetGTA6 trophy list (Exophase / PSNProfiles)", "url": "https://www.planetgta6.com/en/gta-6-trophies/"}

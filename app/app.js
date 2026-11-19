@@ -9,10 +9,18 @@ import { ROADMAP, phaseEarnedCount } from './roadmap.js';
 const STORAGE_KEY = 'gta6-trophy-guide-v1';
 const SPOILER_KEY = 'gta6-trophy-guide-spoilers';
 
-const KIND_LABELS = {
+// Full kind names, as shown in the Kind filter and the detail panel.
+const KINDS = {
   platinum: 'Platinum', completion: '100% completion', story: 'Story',
   side: 'Side quest', collectible: 'Collectible', activity: 'Activity',
   crime: 'Crime', exploration: 'Exploration', money: 'Money', moment: 'One-off moment',
+};
+
+// Short kind names, so the header's per-kind counts fit on one line.
+const KIND_SHORT = {
+  platinum: 'Plat', completion: '100%', story: 'Story', side: 'Side',
+  collectible: 'Coll.', activity: 'Activity', crime: 'Crime',
+  exploration: 'Expl.', money: 'Money', moment: 'Moment',
 };
 
 const params = new URLSearchParams(location.search);
@@ -52,16 +60,23 @@ function saveSpoilers() {
   localStorage.setItem(SPOILER_KEY, spoilers ? '1' : '0');
 }
 
-function isMasked(t) {
+// A hidden trophy stays masked until spoilers are on or it is earned.
+function isHiddenFromReader(t) {
   return t.hidden && !spoilers && !earned.has(t.id);
 }
 
-function gradeBadge(t) {
+function gradeChip(t) {
   return t.grade === 'platinum' ? '◆ Platinum' : t.grade === 'gold' ? '◆ Gold' : t.grade === 'silver' ? '◆ Silver' : '◆ Bronze';
 }
 
-function difficultyLabel(t) {
+function difficultyDots(t) {
   return '●'.repeat(t.difficulty) + '○'.repeat(5 - t.difficulty) + ` ${t.difficulty}/5`;
+}
+
+// Which roadmap phase a trophy belongs to, for the detail panel's line.
+function phaseFor(id) {
+  for (const phase of ROADMAP) if (phase.trophyIds.includes(id)) return phase;
+  return null;
 }
 
 function el(tag, cls, text) {
@@ -82,11 +97,68 @@ function renderProgress() {
   const counts = { platinum: 0, gold: 0, silver: 0, bronze: 0 };
   for (const t of trophies) if (earned.has(t.id)) counts[t.grade] += 1;
   document.getElementById('grade-counts').textContent =
-    `Platinum ${counts.platinum}/1 · Gold ${counts.gold}/2 · Silver ${counts.silver}/6 · Bronze ${counts.bronze}/46 · Xbox 1,000G total`;
+    `Platinum ${counts.platinum}/1 · Gold ${counts.gold}/2 · Silver ${counts.silver}/6 · Bronze ${counts.bronze}/46 · Xbox 1,000G total · `;
   const kinds = {};
   for (const t of trophies) if (earned.has(t.id)) kinds[t.kind] = (kinds[t.kind] || 0) + 1;
-  document.getElementById('kind-counts').textContent = Object.entries(KIND_LABELS)
+  document.getElementById('kind-counts').textContent = Object.entries(KIND_SHORT)
     .map(([k, label]) => `${label} ${kinds[k] || 0}/${trophies.filter((t) => t.kind === k).length}`).join(' · ');
+}
+
+// ---- Detail panel: one trophy's guide with its sources ----
+// The panel is the guide's proof: official name and description, the
+// facts, the guide in the entry's own words, how sure the guide is, the
+// roadmap step it belongs to, and the named sources behind every fact.
+function renderDetail() {
+  const panel = document.getElementById('detail');
+  panel.replaceChildren();
+  const t = byId.get(selectedId);
+  if (!t) {
+    panel.append(el('p', 'empty', 'Pick a trophy to read its full guide, with sources. The guide says what to do, where, and whether it can be missed.'));
+    return;
+  }
+  const masked = isHiddenFromReader(t);
+  panel.append(el('h2', null, masked ? 'Hidden trophy' : t.name));
+  panel.append(el('p', 'desc', masked ? 'This trophy stays hidden on PlayStation until you earn it. Turn spoilers on to read its guide.' : t.description));
+  if (masked) return;
+  // Four facts only: missable and hidden are chips on the trophy card,
+  // the chapter lives in the roadmap line below, Xbox in the card's meta.
+  const facts = el('dl', 'facts');
+  for (const [k, v] of [
+    ['Grade', gradeChip(t)], ['Kind', KINDS[t.kind]],
+    ['Target', t.target], ['Difficulty', difficultyDots(t)],
+  ]) {
+    facts.append(el('dt', null, k), el('dd', null, v));
+  }
+  panel.append(facts);
+  const phase = phaseFor(t.id);
+  if (phase) panel.append(el('p', 'detail-roadmap', `Roadmap: Phase ${phase.phase} · ~${phase.time.replace('About ', '')}`));
+  panel.append(el('h3', null, 'How to unlock it'));
+  panel.append(el('p', null, t.guide));
+  const note = t.confidence === 'unconfirmed'
+    ? 'Confidence: unconfirmed — no guide has pinned down the exact trigger yet; see the sources below for updates.'
+    : t.confidence === 'reported'
+      ? 'Confidence: reported — steps from PowerPyx and GTABase via GTA-Zone, cross-checked with PlanetGTA6.'
+      : 'Confidence: official — the name, description and grade are PlayStation\u2019s own.';
+  panel.append(el('p', 'confidence', note));
+  panel.append(el('h3', null, 'Sources'));
+  const list = el('ul', 'sources');
+  for (const s of t.sources) {
+    const li = el('li');
+    const a = el('a', null, s.name);
+    a.href = s.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    li.append(a);
+    list.append(li);
+  }
+  panel.append(list);
+  const toggle = el('button', 'earned-btn', earned.has(t.id) ? 'Mark as not earned' : 'Mark as earned');
+  toggle.type = 'button';
+  toggle.addEventListener('click', () => {
+    if (earned.has(t.id)) earned.delete(t.id); else earned.add(t.id);
+    saveEarned(); renderProgress(); renderList(); renderDetail(); renderRoadmap(); renderMissables();
+  });
+  panel.append(toggle);
 }
 
 // ---- Trophy list ----
@@ -110,7 +182,7 @@ function renderList() {
     `Showing ${shown.length} of ${trophies.length} trophies${earned.size ? ` · ${earned.size} earned` : ''}`;
   list.replaceChildren();
   for (const t of shown) {
-    const masked = isMasked(t);
+    const masked = isHiddenFromReader(t);
     const card = el('article', 'trophy' + (earned.has(t.id) ? ' earned' : '') + (selectedId === t.id ? ' selected' : ''));
     const box = el('input');
     box.type = 'checkbox';
@@ -122,14 +194,14 @@ function renderList() {
     });
     const body = el('div', 'trophy-body');
     const head = el('div', 'trophy-head');
-    head.append(el('span', 'grade ' + t.grade, gradeBadge(t)));
-    head.append(el('span', 'kind', KIND_LABELS[t.kind]));
+    head.append(el('span', 'grade ' + t.grade, gradeChip(t)));
+    head.append(el('span', 'kind', KINDS[t.kind]));
     if (t.missable === 'possible') head.append(el('span', 'missable', '⚠ Possibly missable'));
     if (t.hidden) head.append(el('span', 'hidden-tag', 'Hidden on PS5'));
     body.append(head);
     body.append(el('h3', null, masked ? 'Hidden trophy — earn it to reveal' : t.name));
     body.append(el('p', 'desc', masked ? 'This trophy stays hidden on PlayStation until you earn it. Turn spoilers on to see it.' : t.description));
-    const meta = el('p', 'meta', `${masked ? '' : `Target: ${t.target} · `}Difficulty ${difficultyLabel(t)} · Xbox ${t.gamerscore}G`);
+    const meta = el('p', 'meta', `${masked ? '' : `Target: ${t.target} · `}Difficulty ${difficultyDots(t)} · Xbox ${t.gamerscore}G`);
     body.append(meta);
     const open = el('button', 'guide-btn', 'Guide & sources');
     open.type = 'button';
@@ -141,58 +213,11 @@ function renderList() {
   if (!shown.length) list.append(el('p', 'empty', 'No trophies match these filters. Clear the search or a filter to see more.'));
 }
 
-// ---- Detail panel: one trophy's guide with its sources ----
-function renderDetail() {
-  const panel = document.getElementById('detail');
-  panel.replaceChildren();
-  const t = byId.get(selectedId);
-  if (!t) {
-    panel.append(el('p', 'empty', 'Pick a trophy above to read its full guide, with sources. The guide says what to do, where, and whether it can be missed.'));
-    return;
-  }
-  const masked = isMasked(t);
-  panel.append(el('h2', null, masked ? 'Hidden trophy' : t.name));
-  panel.append(el('p', 'desc', masked ? 'This trophy stays hidden on PlayStation until you earn it. Turn spoilers on to read its guide.' : t.description));
-  if (masked) return;
-  const facts = el('dl', 'facts');
-  for (const [k, v] of [['Grade', gradeBadge(t)], ['Kind', KIND_LABELS[t.kind]], ['Target', t.target], ['Difficulty', difficultyLabel(t)], ['Xbox Gamerscore', `${t.gamerscore}G`], ['Missable', t.missable === 'possible' ? 'Possibly — see the warning in the guide' : 'No'], ['Hidden on PS5', t.hidden ? 'Yes' : 'No'], ['Chapter', t.chapter ? `Chapter ${t.chapter}` : 'Not a story trophy']]) {
-    facts.append(el('dt', null, k), el('dd', null, v));
-  }
-  panel.append(facts);
-  panel.append(el('h3', null, 'How to unlock it'));
-  panel.append(el('p', null, t.guide));
-  const conf = t.confidence === 'unconfirmed'
-    ? 'Confidence: unconfirmed. No guide has pinned down the exact trigger yet, and this guide says so instead of guessing. Check the sources below for updates.'
-    : t.confidence === 'reported'
-      ? 'Confidence: reported. The steps come from PowerPyx and GTABase via GTA-Zone, cross-checked against the Exophase / PSNProfiles list on PlanetGTA6. The game is days old, so details may still change.'
-      : 'Confidence: official. The name, description and grade are PlayStation\u2019s own.';
-  panel.append(el('p', 'confidence', conf));
-  panel.append(el('h3', null, 'Sources'));
-  const list = el('ul', 'sources');
-  for (const s of t.sources) {
-    const li = el('li');
-    const a = el('a', null, s.name);
-    a.href = s.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    li.append(a);
-    list.append(li);
-  }
-  panel.append(list);
-  const toggle = el('button', 'earned-btn', earned.has(t.id) ? 'Mark as not earned' : 'Mark as earned');
-  toggle.type = 'button';
-  toggle.addEventListener('click', () => {
-    if (earned.has(t.id)) earned.delete(t.id); else earned.add(t.id);
-    saveEarned(); renderProgress(); renderList(); renderDetail(); renderRoadmap(); renderMissables();
-  });
-  panel.append(toggle);
-}
-
 // ---- Roadmap view ----
 function renderRoadmap() {
   const wrap = document.getElementById('roadmap');
   wrap.replaceChildren();
-  wrap.append(el('p', 'lede', 'About 200 hours in total (PowerPyx, via GTA-Zone): 60–80 for the story, about 100 for the 100% checklist, about 10 for Strangers & Freaks and cleanup. One playthrough, no difficulty settings, no mission replay, free roam after the story. Do the phases in order; tick trophies off in the tracker as you earn them.'));
+  wrap.append(el('p', 'lede', 'About 200 hours in total (PowerPyx, via GTA-Zone): 60–80 for the story, about 100 for the 100% checklist, about 10 for Strangers & Freaks and cleanup. One playthrough, no mission replay, free roam after the story. Do the phases in order; tick trophies off in the tracker as you earn them.'));
   for (const phase of ROADMAP) {
     const done = phaseEarnedCount(phase, earned);
     const section = el('section', 'phase');
@@ -201,7 +226,7 @@ function renderRoadmap() {
     const chips = el('div', 'chips');
     for (const id of phase.trophyIds) {
       const t = byId.get(id);
-      const chip = el('button', 'chip' + (earned.has(id) ? ' earned' : ''), isMasked(t) ? `Hidden trophy` : t.name);
+      const chip = el('button', 'chip' + (earned.has(id) ? ' earned' : ''), isHiddenFromReader(t) ? `Hidden trophy` : t.name);
       chip.type = 'button';
       chip.addEventListener('click', () => { selectedId = id; setView('tracker'); renderList(); renderDetail(); document.getElementById('detail').scrollIntoView({ behavior: 'smooth' }); });
       chips.append(chip);
@@ -228,7 +253,7 @@ function renderMissables() {
   const rows = el('ul', 'missable-list');
   for (const t of trophies) {
     const li = el('li', t.missable === 'possible' ? 'possible' : '');
-    li.textContent = `${earned.has(t.id) ? '✓ ' : ''}${isMasked(t) ? 'Hidden trophy' : t.name} — ${t.missable === 'possible' ? 'POSSIBLY MISSABLE: do the Chapter 1 meditation spot' : 'Cannot be missed'}`;
+    li.textContent = `${earned.has(t.id) ? '✓ ' : ''}${isHiddenFromReader(t) ? 'Hidden trophy' : t.name} — ${t.missable === 'possible' ? 'POSSIBLY MISSABLE: do the Chapter 1 meditation spot' : 'Cannot be missed'}`;
     rows.append(li);
   }
   wrap.append(rows);
@@ -312,8 +337,8 @@ function bindControls() {
 bindControls();
 if (filters.grade !== 'all' || filters.kind !== 'all' || filters.missableOnly) setView('tracker');
 renderProgress();
-renderList();
 renderDetail();
+renderList();
 renderRoadmap();
 renderMissables();
 setView(['tracker', 'roadmap', 'missables', 'about'].includes(view) ? view : 'tracker');

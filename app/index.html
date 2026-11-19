@@ -12,10 +12,12 @@
 <header class="masthead">
   <p class="eyebrow">Grand Theft Auto VI · PlayStation 5 · Leonida</p>
   <h1>GTA VI Trophy Guide &amp; Tracker</h1>
-  <p class="lede">All 55 official trophies — 1 Platinum, 2 Gold, 6 Silver, 46 Bronze, 28 hidden, none online. Tick them off as you earn them; your progress stays in this browser, works offline, and exports to a file. Every guide cites its sources, and the five trophies nobody has cracked yet say so instead of guessing.</p>
+  <p class="lede">All 55 official trophies — 1 Platinum, 2 Gold, 6 Silver, 46 Bronze, 28 hidden, none online. Every guide cites its sources.</p>
   <div class="progress" role="group" aria-label="Overall progress">
-    <p id="progress-count">0 of 55 earned · 0%</p>
-    <div class="bar"><div id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+    <div class="progress-row">
+      <p id="progress-count">0 of 55 earned · 0%</p>
+      <div class="bar"><div id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+    </div>
     <p id="grade-counts" class="sub"></p>
     <p id="kind-counts" class="sub"></p>
   </div>
@@ -57,7 +59,7 @@
       <option value="unearned">Not yet earned</option>
     </select></label>
     <label class="check"><input id="missable-only" type="checkbox"> Possibly missable only</label>
-    <label class="check"><input id="spoilers" type="checkbox"> Show spoilers (reveal hidden trophies)</label>
+    <label class="check"><input id="spoilers" type="checkbox"> Show spoilers</label>
   </div>
   <div class="tools">
     <button id="export" type="button">Export progress</button>
@@ -65,8 +67,8 @@
     <button id="reset" type="button">Reset progress</button>
     <button id="print" type="button">Print guide</button>
     <span id="import-note" role="status"></span>
+    <span id="list-count" class="sub"></span>
   </div>
-  <p id="list-count" class="sub"></p>
   <div class="tracker-layout">
     <div id="trophy-list" class="trophy-list"></div>
     <aside id="detail" class="detail" aria-live="polite"></aside>
